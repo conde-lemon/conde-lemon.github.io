@@ -368,3 +368,14 @@ button:hover {
   color: var(--secondary-color);
   font-style: italic;
 }
+
+/* Estilo para el logo en la página de inicio */
+.logo-img {
+  max-width: 300px; /* Ajusta el tamaño máximo del logo */
+  height: auto;
+  margin-bottom: 1rem; /* Espacio entre el logo y el título */
+}
+
+.container h1{
+    text-size:3rem;
+}
