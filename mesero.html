@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mesero - Restaurant EX</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="home-bg">
+<div class="admin-card">
+  <h1>Nuevo Pedido</h1>
+  <!-- Este contenedor se llenará dinámicamente con los ítems del menú -->
+  <div id="pedido-container">
+    <!-- Los ítems del menú aparecerán aquí -->
+  </div>
+
+  <div class="bottom-buttons">
+    <button class="secondary-btn" onclick="mostrarQR()">Generar QR</button>
+    <button onclick="generarBoleta()">Generar Boleta</button>
+    <button class="total-btn" onclick="actualizarBotonTotal()">Total: S/ 0.00</button>
+  </div>
+
+  <div id="qr"></div>
+  <button class="volver" onclick="location.href='index.html'">↩ Volver</button>
+</div>
+
+<script>
+  // Objeto para mantener las cantidades de cada ítem del pedido
+  let cantidades = {};
+  // Objeto para mantener los datos del menú (incluyendo precios)
+  let menuItems = {};
+
+  // Función para cambiar la cantidad de un ítem
+  function cambiarCantidad(itemId, delta) {
+    cantidades[itemId] = Math.max(0, (cantidades[itemId] || 0) + delta);
+    document.getElementById(`cantidad-${itemId}`).textContent = cantidades[itemId];
+    actualizarBotonTotal(); // Actualizar el total cada vez que cambia una cantidad
+  }
+
+  // Función para calcular el total del pedido
+  function calcularTotal() {
+    let total = 0;
+    for (const itemId in cantidades) {
+      if (cantidades[itemId] > 0) {
+        const itemInfo = menuItems[itemId];
+        const precio = parseFloat(itemInfo.precio) || 0;
+        total += cantidades[itemId] * precio;
+      }
+    }
+    return total;
+  }
+
+  // Función para actualizar el texto del botón de total
+  function actualizarBotonTotal() {
+      const total = calcularTotal();
+      const totalBtn = document.querySelector('.total-btn');
+      totalBtn.textContent = `Total: S/ ${total.toFixed(2)}`;
+  }
+
+  // Función para generar la boleta (ahora con detalle)
+  function generarBoleta() {
+    const total = calcularTotal().toFixed(2);
+    let detallePedido = 'Detalle del Pedido:\n';
+    let hayItems = false;
+
+    for (const itemId in cantidades) {
+        if (cantidades[itemId] > 0) {
+            hayItems = true;
+            const itemInfo = menuItems[itemId];
+            detallePedido += `- ${itemInfo.nombre} x${cantidades[itemId]}\n`;
+        }
+    }
+
+    if (!hayItems) {
+        alert('No ha seleccionado ningún ítem.');
+        return;
+    }
+
+    alert(`${detallePedido}\nTotal a pagar: S/ ${total}`);
+  }
+
+  // --- FUNCIÓN MODIFICADA ---
+  // Guarda el pedido en localStorage y genera el enlace para el cliente
+  function mostrarQR() {
+      const pedidoID = 'pedido_' + Math.random().toString(36).substring(2, 10);
+      const pedidoActual = {};
+      let hayItems = false;
+
+      // Construir el objeto del pedido solo con ítems que tienen cantidad > 0
+      for (const itemId in cantidades) {
+        if (cantidades[itemId] > 0) {
+          hayItems = true;
+          // Guardamos la información completa del ítem y su cantidad
+          pedidoActual[itemId] = {
+            ...menuItems[itemId], // nombre, categoria, precio, descripcion
+            cantidad: cantidades[itemId]
+          };
+        }
+      }
+
+      if (!hayItems) {
+        alert('No se puede generar un QR para un pedido vacío.');
+        return;
+      }
+
+      // Guardar el pedido específico en localStorage para que cliente.html lo lea
+      localStorage.setItem(pedidoID, JSON.stringify(pedidoActual));
+
+      const url = `cliente.html?pedido=${pedidoID}`;
+      const qrDiv = document.getElementById("qr");
+      qrDiv.innerHTML = `
+        <p><strong>URL para el Cliente:</strong></p>
+        <p><a href="${url}" target="_blank" title="Abrir en nueva pestaña">${url}</a></p>
+      `;
+      qrDiv.classList.add('visible');
+  }
+
+  // --- Carga dinámica del menú al iniciar la página ---
+  document.addEventListener('DOMContentLoaded', () => {
+    const pedidoContainer = document.getElementById('pedido-container');
+
+    const cargarMenu = async () => {
+      let menu = JSON.parse(localStorage.getItem('menu_restaurant'));
+
+      // Si no hay menú en localStorage, busca el archivo por defecto
+      if (!menu || menu.length === 0) {
+        try {
+          const response = await fetch('menu_default.json');
+          const defaultMenu = await response.json();
+          localStorage.setItem('menu_restaurant', JSON.stringify(defaultMenu));
+          menu = defaultMenu;
+          console.log('Menú por defecto cargado.');
+        } catch (error) {
+          console.error('Error al cargar el menú por defecto:', error);
+          menu = []; // Asegura que menu sea un array
+        }
+      }
+
+      if (menu.length === 0) {
+        pedidoContainer.innerHTML = '<p class="empty-menu">No hay ítems en el menú. Agrégalos desde el panel de administrador.</p>';
+        return;
+      }
+
+      const platos = menu.filter(item => item.categoria === 'plato');
+    const bebidas = menu.filter(item => item.categoria === 'bebida');
+
+      const generarHTMLItems = (listaItems) => {
+        let html = '';
+        listaItems.forEach(item => {
+          const itemId = item.nombre.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+          cantidades[itemId] = 0;
+          menuItems[itemId] = item;
+
+          html += `
+            <div class="item">
+              <span>${item.nombre} <small>(S/ ${parseFloat(item.precio || 0).toFixed(2)})</small></span>
+              <div class="controls">
+                <button class="control-btn" onclick="cambiarCantidad('${itemId}', -1)">-</button>
+                <span class="cantidad" id="cantidad-${itemId}">0</span>
+                <button class="control-btn" onclick="cambiarCantidad('${itemId}', 1)">+</button>
+              </div>
+            </div>
+          `;
+        });
+        return html;
+      };
+
+      let menuHTML = '';
+      if (platos.length > 0) menuHTML += generarHTMLItems(platos);
+      if (platos.length > 0 && bebidas.length > 0) menuHTML += '<div class="separator">---</div>';
+      if (bebidas.length > 0) menuHTML += generarHTMLItems(bebidas);
+
+      pedidoContainer.innerHTML = menuHTML;
+      actualizarBotonTotal();
+    }
+
+    cargarMenu();
+  });
+</script>
+</body>
+</html>

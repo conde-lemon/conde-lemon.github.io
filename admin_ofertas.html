@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Añadir Oferta</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="home-bg">
+<div class="admin-card">
+  <h2>Nueva Oferta</h2>
+  <form id="formOferta">
+    <input type="text" id="oferta-titulo" placeholder="Título de la Oferta" required />
+    <textarea id="oferta-descripcion" placeholder="Descripción de la oferta" required></textarea>
+    <input type="text" id="oferta-imagen" placeholder="URL de la imagen (opcional)" />
+    <button type="submit">Publicar Oferta</button>
+  </form>
+  <button onclick="location.href='admin.html'" class="volver">↩ Volver</button>
+</div>
+
+<script>
+  const form = document.getElementById('formOferta');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const nuevaOferta = {
+      titulo: document.getElementById('oferta-titulo').value.trim(),
+      descripcion: document.getElementById('oferta-descripcion').value.trim(),
+      imagen: document.getElementById('oferta-imagen').value.trim()
+    };
+
+    // Obtener ofertas existentes o inicializar un array vacío
+    let ofertas = JSON.parse(localStorage.getItem('ofertas_adicionales')) || [];
+
+    // Agregar la nueva oferta
+    ofertas.push(nuevaOferta);
+
+    // Guardar el array actualizado en localStorage
+    localStorage.setItem('ofertas_adicionales', JSON.stringify(ofertas));
+
+    alert('¡Oferta publicada correctamente!');
+    form.reset();
+  });
+</script>
+</body>
+</html>

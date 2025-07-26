@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Historial de Pedidos</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="home-bg">
+<div class="admin-card" style="max-width: 600px;"> <!-- A wider card for the history -->
+  <h2>Historial de Pedidos</h2>
+  <div id="historial-container">
+    <!-- El historial se cargará aquí -->
+  </div>
+  <button onclick="location.href='admin.html'" class="volver">↩ Volver</button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const container = document.getElementById('historial-container');
+    let historial = JSON.parse(localStorage.getItem('pedidos_historial'));
+
+    // Si no hay historial, cargar desde el archivo por defecto
+    if (!historial || historial.length === 0) {
+      try {
+        const response = await fetch('historial_default.json');
+        if (response.ok) {
+          const defaultHistorial = await response.json();
+          localStorage.setItem('pedidos_historial', JSON.stringify(defaultHistorial));
+          historial = defaultHistorial;
+          console.log('Historial por defecto cargado.');
+        } else {
+           historial = [];
+        }
+      } catch (error) {
+        console.error('Error al cargar el historial por defecto:', error);
+        historial = [];
+      }
+    }
+
+    if (!historial || historial.length === 0) {
+      container.innerHTML = '<p class="empty-menu">Aún no hay pedidos en el historial.</p>';
+      return;
+    }
+
+    let historialHTML = '';
+    historial.forEach(pedido => {
+      const fecha = new Date(pedido.fecha);
+      const fechaFormateada = fecha.toLocaleString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      let itemsHTML = '';
+      for (const itemId in pedido.items) {
+        const item = pedido.items[itemId];
+        itemsHTML += `<li>${item.nombre} (x${item.cantidad})</li>`;
+      }
+
+      historialHTML += `
+        <div class="historial-card">
+          <div class="historial-header">
+            <span><strong>Fecha:</strong> ${fechaFormateada}</span>
+            <span><strong>Total: S/ ${pedido.total.toFixed(2)}</strong></span>
+          </div>
+          <div class="historial-body">
+            <p><strong>Detalle:</strong></p>
+            <ul>${itemsHTML}</ul>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = historialHTML;
+  });
+</script>
+</body>
+</html>

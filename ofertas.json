@@ -1,0 +1,17 @@
+[
+  {
+    "titulo": "Oferta 1",
+    "descripcion": "Deliciosa lasaña casera con pan de ajo.",
+    "imagen": "img/oferta1.jpg"
+  },
+  {
+    "titulo": "Oferta 2",
+    "descripcion": "Pollo a la brasa con papas y ensalada.",
+    "imagen": "img/oferta2.jpg"
+  },
+  {
+    "titulo": "Oferta 3",
+    "descripcion": "Pastel de maracuyá + bebida gratis.",
+    "imagen": "img/oferta3.jpeg"
+  }
+]
