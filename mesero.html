@@ -79,7 +79,6 @@
     alert(`${detallePedido}\nTotal a pagar: S/ ${total}`);
   }
 
-  // --- FUNCIÓN MODIFICADA ---
   // Guarda el pedido en localStorage y genera el enlace para el cliente
   function mostrarQR() {
       const pedidoID = 'pedido_' + Math.random().toString(36).substring(2, 10);
@@ -111,6 +110,9 @@
       qrDiv.innerHTML = `
         <p><strong>URL para el Cliente:</strong></p>
         <p><a href="${url}" target="_blank" title="Abrir en nueva pestaña">${url}</a></p>
+        <br>
+        <p>Escanea el siguiente código QR para ver tu pedido:</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=200x200" alt="QR Code" />
       `;
       qrDiv.classList.add('visible');
   }
@@ -125,7 +127,7 @@
       // Si no hay menú en localStorage, busca el archivo por defecto
       if (!menu || menu.length === 0) {
         try {
-          const response = await fetch('menu_default.json');
+          const response = await fetch('menu_default.json'); // Esta línea ahora funcionará
           const defaultMenu = await response.json();
           localStorage.setItem('menu_restaurant', JSON.stringify(defaultMenu));
           menu = defaultMenu;
@@ -142,7 +144,7 @@
       }
 
       const platos = menu.filter(item => item.categoria === 'plato');
-    const bebidas = menu.filter(item => item.categoria === 'bebida');
+      const bebidas = menu.filter(item => item.categoria === 'bebida');
 
       const generarHTMLItems = (listaItems) => {
         let html = '';
