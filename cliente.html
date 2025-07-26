@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tu Pedido - Restaurant EX</title>
+  <!-- Usamos la hoja de estilos principal -->
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="home-bg">
+<div class="admin-card">
+  <div id="resumen-pedido">
+    <!-- El resumen del pedido se cargará aquí -->
+    <h2>Cargando tu pedido...</h2>
+  </div>
+
+  <button id="btn-pagar" onclick="procesarPagoYMostrarOfertas()">💳 Pagar Ahora</button>
+
+  <div id="ofertas-container">
+    <h2>¡Aprovecha nuestras ofertas!</h2>
+    <div id="ofertas-list">
+      <!-- Las ofertas se cargarán aquí -->
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const pedidoID = params.get('pedido');
+    const resumenContainer = document.getElementById('resumen-pedido');
+
+    if (!pedidoID) {
+      resumenContainer.innerHTML = '<h2>Error: No se encontró un ID de pedido.</h2>';
+      return;
+    }
+
+    const pedidoData = localStorage.getItem(pedidoID);
+
+    if (!pedidoData) {
+      resumenContainer.innerHTML = `<h2>Error: El pedido con ID "${pedidoID}" no existe o ha expirado.</h2>`;
+      return;
+    }
+
+    const pedido = JSON.parse(pedidoData);
+    let total = 0;
+    let resumenHTML = '<h2>Resumen de tu Pedido</h2><div class="pedido-lista">';
+
+    for (const itemId in pedido) {
+      const item = pedido[itemId];
+      const subtotal = item.cantidad * parseFloat(item.precio);
+      total += subtotal;
+      resumenHTML += `
+        <div class="pedido-item">
+          <span>${item.nombre} (x${item.cantidad})</span>
+          <span>S/ ${subtotal.toFixed(2)}</span>
+        </div>
+      `;
+    }
+
+    resumenHTML += `</div><div class="pedido-total"><strong>Total a Pagar:</strong><strong>S/ ${total.toFixed(2)}</strong></div>`;
+    resumenContainer.innerHTML = resumenHTML;
+  });
+
+  async function procesarPagoYMostrarOfertas() {
+    // --- 1. Guardar en el historial ---
+    const params = new URLSearchParams(window.location.search);
+    const pedidoID = params.get('pedido');
+
+    if (pedidoID) {
+      const pedidoData = localStorage.getItem(pedidoID);
+      if (pedidoData) {
+        const pedido = JSON.parse(pedidoData);
+        let total = 0;
+        // Recalcular total para seguridad
+        for (const itemId in pedido) {
+          const item = pedido[itemId];
+          total += item.cantidad * parseFloat(item.precio);
+        }
+
+        const historialEntry = {
+          id: pedidoID,
+          fecha: new Date().toISOString(),
+          total: total,
+          items: pedido
+        };
+
+        // Obtener historial, añadir entrada y guardar
+        let historial = JSON.parse(localStorage.getItem('pedidos_historial')) || [];
+        historial.unshift(historialEntry); // Añadir al inicio
+        localStorage.setItem('pedidos_historial', JSON.stringify(historial));
+
+        // Limpiar el pedido temporal
+        localStorage.removeItem(pedidoID);
+        console.log('Pedido guardado en el historial.');
+      }
+    }
+
+    // --- 2. Mostrar ofertas (con carga de datos por defecto) ---
+    document.getElementById('btn-pagar').style.display = 'none';
+    const ofertasContainer = document.getElementById('ofertas-container');
+    ofertasContainer.style.display = 'block';
+
+    let ofertasGuardadas = JSON.parse(localStorage.getItem('ofertas_adicionales'));
+
+    // Si no hay ofertas, cargar desde ofertas.json
+    if (!ofertasGuardadas || ofertasGuardadas.length === 0) {
+      try {
+        const response = await fetch('ofertas.json');
+        const defaultOfertas = await response.json();
+        localStorage.setItem('ofertas_adicionales', JSON.stringify(defaultOfertas));
+        ofertasGuardadas = defaultOfertas;
+        console.log('Ofertas por defecto cargadas.');
+      } catch (error) {
+        console.error('Error al cargar las ofertas por defecto:', error);
+        ofertasGuardadas = [];
+      }
+    }
+
+    const ofertasList = document.getElementById('ofertas-list');
+
+    if (ofertasGuardadas.length === 0) {
+      ofertasList.innerHTML = '<p>No hay ofertas especiales por el momento.</p>';
+      return;
+    }
+
+    ofertasGuardadas.forEach(oferta => {
+      const ofertaDiv = document.createElement('div');
+      ofertaDiv.className = 'oferta-card';
+      ofertaDiv.innerHTML = `
+        <img src="${oferta.imagen || 'https://via.placeholder.com/300x150.png?text=Oferta'}" alt="${oferta.titulo}">
+        <h3>${oferta.titulo}</h3>
+        <p>${oferta.descripcion}</p>
+      `;
+      ofertasList.appendChild(ofertaDiv);
+    });
+  }
+</script>
+</body>
+</html>

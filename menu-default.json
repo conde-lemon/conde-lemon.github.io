@@ -1,0 +1,32 @@
+[
+  {
+    "nombre": "Lomo Saltado",
+    "categoria": "plato",
+    "precio": "35.50",
+    "descripcion": "Trozos de lomo de res salteados con cebolla, tomate y papas fritas. Acompañado de arroz."
+  },
+  {
+    "nombre": "Aji de Gallina",
+    "categoria": "plato",
+    "precio": "32.00",
+    "descripcion": "Pechuga de gallina deshilachada en una cremosa salsa de ají amarillo."
+  },
+  {
+    "nombre": "Ceviche Clásico",
+    "categoria": "plato",
+    "precio": "40.00",
+    "descripcion": "Pescado fresco marinado en jugo de limón, con cebolla roja, ají limo y camote."
+  },
+  {
+    "nombre": "Inca Kola 500ml",
+    "categoria": "bebida",
+    "precio": "5.00",
+    "descripcion": "La bebida de sabor nacional."
+  },
+  {
+    "nombre": "Chicha Morada (Jarra)",
+    "categoria": "bebida",
+    "precio": "12.00",
+    "descripcion": "Refresco tradicional a base de maíz morado."
+  }
+]

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agregar al Menú - Restaurant EX</title>
+  <!-- Enlace a la hoja de estilos principal -->
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body class="home-bg">
+<!-- Usamos la clase .admin-card para mantener la consistencia visual -->
+<div class="admin-card">
+  <h2>Agregar al Menú</h2>
+  <form id="formAgregar">
+    <input type="text" id="nombre" placeholder="Nombre del ítem" required />
+    <select id="categoria" required>
+      <option value="" disabled selected>Seleccione una categoría</option>
+      <option value="plato">Plato</option>
+      <option value="bebida">Bebida</option>
+    </select>
+    <!-- Añadimos 'step' y 'min' para un mejor control del precio -->
+    <input type="number" id="precio" placeholder="Precio (S/.)" step="0.1" min="0" required />
+    <textarea id="descripcion" placeholder="Descripción (opcional)"></textarea>
+    <button type="submit">Agregar opción</button>
+  </form>
+  <!-- Botón "Volver" integrado en la tarjeta -->
+  <button class="volver" onclick="location.href='admin.html'">↩ Volver</button>
+</div>
+
+<script>
+  const form = document.getElementById('formAgregar');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const nombre = document.getElementById('nombre').value.trim();
+    const categoria = document.getElementById('categoria').value;
+    const precio = document.getElementById('precio').value.trim();
+    const descripcion = document.getElementById('descripcion').value.trim();
+
+    if (!categoria) {
+      alert('Por favor, seleccione una categoría.');
+      return;
+    }
+
+    const nuevoItem = { nombre, categoria, precio, descripcion };
+
+    // Obtener lista actual del localStorage
+    let menu = JSON.parse(localStorage.getItem('menu_restaurant')) || [];
+
+    // Agregar nuevo ítem
+    menu.push(nuevoItem);
+    localStorage.setItem('menu_restaurant', JSON.stringify(menu));
+
+    alert('¡Ítem agregado correctamente!');
+    form.reset();
+  });
+</script>
+</body>
+</html>
