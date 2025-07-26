@@ -1,0 +1,19 @@
+[
+  {
+    "id": "hist_inicial_1",
+    "fecha": "2023-10-26T10:30:00Z",
+    "total": 40.50,
+    "items": {
+      "lomo-saltado": {
+        "nombre": "Lomo Saltado",
+        "cantidad": 1,
+        "precio": "35.50"
+      },
+      "inca-kola-500ml": {
+        "nombre": "Inca Kola 500ml",
+        "cantidad": 1,
+        "precio": "5.00"
+      }
+    }
+  }
+]
